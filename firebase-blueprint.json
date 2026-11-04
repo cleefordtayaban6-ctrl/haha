@@ -1,0 +1,176 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Registered user profile and permission data",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth user ID"
+        },
+        "email": {
+          "type": "string",
+          "description": "User Google email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of user"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar photo URL"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "solver", "presenter", "viewer"],
+          "description": "Access level role in the platform"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "suspended", "pending"],
+          "description": "Account status"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp or server timestamp"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "description": "ISO timestamp or server timestamp"
+        },
+        "canShareScreen": {
+          "type": "boolean",
+          "description": "Permission to share screen"
+        },
+        "canGenerateText": {
+          "type": "boolean",
+          "description": "Permission to trigger OCR/solution generator"
+        }
+      },
+      "required": ["uid", "email", "role", "status"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin authorization entry",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Administrator email"
+        },
+        "grantedAt": {
+          "type": "string",
+          "description": "Timestamp when admin role was confirmed"
+        }
+      },
+      "required": ["email"]
+    },
+    "Session": {
+      "title": "Session",
+      "description": "Live screen-sharing session metadata",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Unique session room identifier"
+        },
+        "hostUid": {
+          "type": "string",
+          "description": "UID of the user sharing screen"
+        },
+        "hostEmail": {
+          "type": "string",
+          "description": "Email of host"
+        },
+        "hostName": {
+          "type": "string",
+          "description": "Display name of host"
+        },
+        "title": {
+          "type": "string",
+          "description": "Session title or subject"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether screen share is currently active"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last activity timestamp"
+        }
+      },
+      "required": ["sessionId", "hostUid", "isActive"]
+    },
+    "Capture": {
+      "title": "Capture",
+      "description": "Screen OCR and AI-generated answer record",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique capture identifier"
+        },
+        "sessionId": {
+          "type": "string",
+          "description": "Session identifier"
+        },
+        "authorUid": {
+          "type": "string",
+          "description": "UID of user who triggered generator"
+        },
+        "authorEmail": {
+          "type": "string",
+          "description": "Email of author"
+        },
+        "extractedText": {
+          "type": "string",
+          "description": "Transcribed text from shared screen"
+        },
+        "detectedQuestion": {
+          "type": "string",
+          "description": "Detected question or problem statement"
+        },
+        "recommendedAnswer": {
+          "type": "string",
+          "description": "Generated solution or verified answer"
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Step-by-step reasoning and explanation"
+        },
+        "confidence": {
+          "type": "number",
+          "description": "Confidence percentage"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Capture timestamp"
+        }
+      },
+      "required": ["id", "authorUid", "extractedText"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and permissions"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Platform administrator privilege registry"
+    },
+    "/sessions/{sessionId}": {
+      "schema": "Session",
+      "description": "Live screen share sessions"
+    },
+    "/sessions/{sessionId}/captures/{captureId}": {
+      "schema": "Capture",
+      "description": "OCR and generated answers within a session"
+    }
+  }
+}

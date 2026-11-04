@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isRootAdminEmail() {
+      return isVerified() && request.auth.token.email == 'cleefordtayaban6@gmail.com';
+    }
+
+    function isAdmin() {
+      return isRootAdminEmail() || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Health / connection test document
+    match /test/{testId} {
+      allow get: if true;
+    }
+
+    // Admin role registry
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isRootAdminEmail();
+    }
+
+    // User management & profile collection
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && (isOwner(userId) || isAdmin()) && (
+        request.resource.data.role == 'admin' ? isRootAdminEmail() : true
+      );
+      allow update: if isSignedIn() && (
+        isAdmin() || (
+          isOwner(userId) &&
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.status == resource.data.status
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Live screen-sharing sessions
+    match /sessions/{sessionId} {
+      allow get, list: if isSignedIn();
+      allow create: if isVerified() && request.resource.data.hostUid == request.auth.uid;
+      allow update: if isVerified() && (resource.data.hostUid == request.auth.uid || isAdmin());
+      allow delete: if isVerified() && (resource.data.hostUid == request.auth.uid || isAdmin());
+
+      // Screen captures and generated OCR/solutions
+      match /captures/{captureId} {
+        allow get, list: if isSignedIn();
+        allow create: if isVerified() && request.resource.data.authorUid == request.auth.uid;
+        allow update, delete: if isVerified() && (resource.data.authorUid == request.auth.uid || isAdmin());
+      }
+    }
+  }
+}

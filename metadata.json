@@ -1,0 +1,10 @@
+{
+  "name": "OmniAssist - Screen AI Copilot & Exam Intelligence",
+  "description": "Real-time screen-sharing, instant OCR text extraction, and intelligent question solving with administrator user management.",
+  "requestFramePermissions": [
+    "display-capture"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
